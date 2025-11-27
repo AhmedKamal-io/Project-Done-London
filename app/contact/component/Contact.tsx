@@ -305,7 +305,10 @@ export default function ContactPage() {
   });
 
   // reCAPTCHA hook
-  const { executeRecaptcha } = useReCaptcha(RECAPTCHA_CONFIG.siteKey, 'contact');
+  const { executeRecaptcha } = useReCaptcha(
+    RECAPTCHA_CONFIG.siteKey,
+    "contact"
+  );
 
   // handler لتحديث القيم
   const handleChange = (
@@ -318,39 +321,39 @@ export default function ContactPage() {
   };
 
   // handler للإرسال
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      // 🔒 Get reCAPTCHA token
-      const recaptchaToken = await executeRecaptcha();
-      
-      if (!recaptchaToken) {
-        alert(isArabic ? "فشل التحقق من الأمان. يرجى المحاولة مرة أخرى." : "Security verification failed. Please try again.");
-        return;
-      }
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   try {
+  //     // 🔒 Get reCAPTCHA token
+  //     const recaptchaToken = await executeRecaptcha();
 
-      const response = await fetch("/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, recaptchaToken }),
-      });
-      if (!response.ok) throw new Error("Network response was not ok");
-      alert(isArabic ? "تم الإرسال بنجاح!" : "Message sent successfully!");
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-      });
-    } catch (error) {
-      console.error(error);
-      alert(
-        isArabic
-          ? "حدث خطأ، حاول مرة أخرى."
-          : "Something went wrong. Please try again."
-      );
-    }
-  };
+  //     if (!recaptchaToken) {
+  //       alert(isArabic ? "فشل التحقق من الأمان. يرجى المحاولة مرة أخرى." : "Security verification failed. Please try again.");
+  //       return;
+  //     }
+
+  //     const response = await fetch("/api/messages", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ ...formData, recaptchaToken }),
+  //     });
+  //     if (!response.ok) throw new Error("Network response was not ok");
+  //     alert(isArabic ? "تم الإرسال بنجاح!" : "Message sent successfully!");
+  //     setFormData({
+  //       name: "",
+  //       email: "",
+  //       phone: "",
+  //       message: "",
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     alert(
+  //       isArabic
+  //         ? "حدث خطأ، حاول مرة أخرى."
+  //         : "Something went wrong. Please try again."
+  //     );
+  //   }
+  // };
 
   return (
     <main
@@ -360,25 +363,25 @@ export default function ContactPage() {
       }`}
     >
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-royal-900 via-navy-900 to-royal-800 text-white py-20 overflow-hidden">
+      <section className="relative py-20 overflow-hidden text-white bg-gradient-to-br from-royal-900 via-navy-900 to-royal-800">
         <AnimatedBackground variant="orbs" />
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="container relative z-10 px-4 mx-auto text-center">
           <h1
             ref={heroTitleRef}
-            className="text-4xl lg:text-6xl font-bold mb-6"
+            className="mb-6 text-4xl font-bold lg:text-6xl"
           >
             {t.heroTitle}
           </h1>
           <p
             ref={heroDescRef}
-            className="text-xl text-gray-300 leading-relaxed"
+            className="text-xl leading-relaxed text-gray-300"
           >
             {t.heroDesc}
           </p>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container px-4 py-16 mx-auto">
         <div
           className={`grid lg:grid-cols-2 gap-12 ${
             isArabic ? "text-right" : "text-left"
@@ -386,8 +389,8 @@ export default function ContactPage() {
         >
           {/* Contact Form */}
           <div>
-            <form onSubmit={handleSubmit}>
-              <Card className="bg-gray-900/70 backdrop-blur-lg border border-gray-800 shadow-xl">
+            <form>
+              <Card className="border border-gray-800 shadow-xl bg-gray-900/70 backdrop-blur-lg">
                 <CardHeader>
                   <CardTitle ref={formTitleRef} className="text-2xl text-white">
                     {t.sendMessage}
@@ -399,7 +402,7 @@ export default function ContactPage() {
                 <CardContent>
                   <div ref={formLabelsRef} className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block mb-2 text-sm font-medium text-gray-300">
                         {t.name}
                       </label>
                       <Input
@@ -407,17 +410,15 @@ export default function ContactPage() {
                         name="name"
                         onChange={handleChange}
                         required
-                        className="bg-gray-800 text-white border-gray-700 focus:border-royal-500"
+                        className="text-white bg-gray-800 border-gray-700 focus:border-royal-500"
                         placeholder={
-                          isArabic
-                            ? "أدخل اسمك الكامل"
-                            : "Enter your full name"
+                          isArabic ? "أدخل اسمك الكامل" : "Enter your full name"
                         }
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block mb-2 text-sm font-medium text-gray-300">
                         {t.email}
                       </label>
                       <Input
@@ -426,19 +427,19 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="bg-gray-800 text-white border-gray-700 focus:border-royal-500"
+                        className="text-white bg-gray-800 border-gray-700 focus:border-royal-500"
                         placeholder="your@email.com"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block mb-2 text-sm font-medium text-gray-300">
                         {t.phone}
                       </label>
                       <Input
                         name="phone"
                         type="tel"
-                        className="bg-gray-800 text-white border-gray-700 focus:border-royal-500"
+                        className="text-white bg-gray-800 border-gray-700 focus:border-royal-500"
                         value={formData.phone}
                         onChange={handleChange}
                         required
@@ -447,7 +448,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block mb-2 text-sm font-medium text-gray-300">
                         {t.message}
                       </label>
                       <textarea
@@ -455,13 +456,13 @@ export default function ContactPage() {
                         onChange={handleChange}
                         name="message"
                         required
-                        className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:ring-2 focus:ring-royal-500 h-32"
+                        className="w-full h-32 px-3 py-2 text-white bg-gray-800 border border-gray-700 rounded-md focus:ring-2 focus:ring-royal-500"
                         placeholder={t.messagePlaceholder}
                       ></textarea>
                     </div>
 
                     <Button
-                      className="w-full bg-royal-600 hover:bg-royal-700 text-white py-3"
+                      className="w-full py-3 text-white bg-royal-600 hover:bg-royal-700"
                       type="submit"
                     >
                       {t.send}
@@ -479,26 +480,26 @@ export default function ContactPage() {
               return (
                 <Card
                   key={index}
-                  className="bg-gray-900/70 backdrop-blur-lg border border-gray-800 shadow-lg"
+                  className="border border-gray-800 shadow-lg bg-gray-900/70 backdrop-blur-lg"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-royal-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-lg bg-royal-600/20">
                         <Icon className="w-6 h-6 text-royal-400" />
                       </div>
                       <div>
-                        <h3 className="contact-title font-bold text-lg text-white mb-2">
+                        <h3 className="mb-2 text-lg font-bold text-white contact-title">
                           {info.title}
                         </h3>
                         {info.details.map((detail, i) => (
                           <p
                             key={i}
-                            className="contact-detail text-gray-300 font-medium"
+                            className="font-medium text-gray-300 contact-detail"
                           >
                             {detail}
                           </p>
                         ))}
-                        <p className="contact-desc text-gray-400 text-sm mt-1">
+                        <p className="mt-1 text-sm text-gray-400 contact-desc">
                           {info.description}
                         </p>
                       </div>
@@ -509,14 +510,14 @@ export default function ContactPage() {
             })}
 
             {/* Working Hours */}
-            <Card className="bg-gray-900/70 backdrop-blur-lg border border-gray-800 shadow-lg">
+            <Card className="border border-gray-800 shadow-lg bg-gray-900/70 backdrop-blur-lg">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-royal-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-lg bg-royal-600/20">
                     <Clock className="w-6 h-6 text-royal-400" />
                   </div>
                   <div>
-                    <h3 className="contact-title font-bold text-lg text-white mb-2">
+                    <h3 className="mb-2 text-lg font-bold text-white contact-title">
                       {t.workingHours}
                     </h3>
                     <div className="space-y-1 text-gray-300">
@@ -542,7 +543,7 @@ export default function ContactPage() {
                         </>
                       )}
                     </div>
-                    <p className="contact-desc text-gray-400 text-sm mt-1">
+                    <p className="mt-1 text-sm text-gray-400 contact-desc">
                       {isArabic ? "توقيت لندن (GMT)" : "London Time (GMT)"}
                     </p>
                   </div>
@@ -556,28 +557,28 @@ export default function ContactPage() {
         <div className="mt-16">
           <h2
             ref={officesTitleRef}
-            className="text-3xl font-bold text-center mb-12 text-white"
+            className="mb-12 text-3xl font-bold text-center text-white"
           >
             {t.officesTitle}
           </h2>
           <div
             ref={officesGridRef}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
           >
             {offices.map((office, index) => (
               <Card
                 key={index}
-                className="bg-gray-900/70 backdrop-blur-lg border border-gray-800 shadow-lg text-center"
+                className="text-center border border-gray-800 shadow-lg bg-gray-900/70 backdrop-blur-lg"
               >
                 <CardContent className="p-6">
                   <Globe className="w-8 h-8 mx-auto mb-4 text-royal-400" />
-                  <h3 className="office-city font-bold text-lg text-white mb-2">
+                  <h3 className="mb-2 text-lg font-bold text-white office-city">
                     {office.city}
                   </h3>
-                  <p className="office-address text-gray-400 text-sm mb-3">
+                  <p className="mb-3 text-sm text-gray-400 office-address">
                     {office.address}
                   </p>
-                  <p className="office-phone text-royal-400 font-medium">
+                  <p className="font-medium office-phone text-royal-400">
                     {office.phone}
                   </p>
                 </CardContent>
@@ -587,20 +588,20 @@ export default function ContactPage() {
         </div>
 
         {/* CTA */}
-        <Card className="relative mt-16 bg-gradient-to-br from-royal-600 to-crimson-600 text-white border-0 shadow-2xl overflow-hidden">
+        <Card className="relative mt-16 overflow-hidden text-white border-0 shadow-2xl bg-gradient-to-br from-royal-600 to-crimson-600">
           <AnimatedBackground variant="gradient" />
-          <CardContent className="p-12 text-center relative z-10">
-            <h2 ref={ctaTitleRef} className="text-3xl font-bold mb-4">
+          <CardContent className="relative z-10 p-12 text-center">
+            <h2 ref={ctaTitleRef} className="mb-4 text-3xl font-bold">
               {t.ready}
             </h2>
-            <p ref={ctaDescRef} className="text-xl text-white/90 mb-8">
+            <p ref={ctaDescRef} className="mb-8 text-xl text-white/90">
               {t.freeConsult}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 bg-transparent"
+                className="text-white bg-transparent border-white/30 hover:bg-white/10"
               >
                 {t.bookNow}
               </Button>

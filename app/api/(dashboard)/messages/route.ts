@@ -24,12 +24,8 @@ const ALLOWED_DOMAINS = [
 const allowedDomainsRegex = new RegExp(`@(${ALLOWED_DOMAINS.join("|")})$`, "i");
 
 const BookingSchema = z.object({
-  // 1. Date (Required)
-  date: z
-    .string({
-      required_error: "حقل التاريخ مطلوب.",
-    })
-    .min(1, "حقل التاريخ مطلوب."),
+  // 1. Date (Required and Simplified)
+  date: z.string().min(1, "حقل التاريخ مطلوب."),
 
   // 2. City (Required)
   city: z
@@ -58,27 +54,32 @@ const BookingSchema = z.object({
     .trim()
 
     // First Refinement: Check max length of Local Part (before @)
-    .refine((val) => val.split("@")[0].length <= 40, {
+    .refine((val: string) => val.split("@")[0].length <= 40, {
       message:
         "لا يمكن أن يتجاوز الجزء المحلي من البريد الإلكتروني (قبل @) 40 حرفًا.",
     })
 
     // Second Refinement: Check if the domain is on the allowed list
-    .refine((val) => allowedDomainsRegex.test(val), {
+    .refine((val: string) => allowedDomainsRegex.test(val), {
       message:
         "يرجى استخدام مزود بريد إلكتروني شائع (مثل Gmail، Yahoo، Outlook).",
     }),
 
-  // 5. Phone (Required)
+  // 5. Phone (Required and must be digits)
   phone: z
     .string({
       required_error: "حقل رقم الهاتف مطلوب.",
     })
+    // تم التعديل: التحقق من أن الحقل يحتوي على أرقام فقط
+    .regex(
+      /^[0-9]+$/,
+      "رقم الهاتف يجب أن يحتوي على أرقام فقط (بدون مسافات أو رموز)."
+    )
     .min(8, "رقم الهاتف قصير جداً (الحد الأدنى 8 أرقام).")
     .max(20, "رقم الهاتف طويل جداً (الحد الأقصى 20 رقمًا).")
     .trim(),
 
-  // reCAPTCHA Token اختياري في البيانات الفعلية، لكن سنتعامل معه في منطق الخادم
+  // reCAPTCHA Token (Optional)
   recaptchaToken: z.string().optional(),
 });
 
@@ -144,7 +145,7 @@ function isSessionRestricted(sessionKey: string): boolean {
 }
 
 /**
- * تحديث وقت آخر إرسال ناجح أو فاشل بعد تجاوز الحد.
+ * تحديث وقت آخر إرسال ناجح (أو فاشل في التحقق الأمني) لفرض فترة الـ 15 دقيقة.
  * @param sessionKey مفتاح الجلسة.
  */
 function updateSessionRestriction(sessionKey: string) {
@@ -183,14 +184,14 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // 3. التحقق من صحة الإدخال (Zod Validation)
-    // يتم إرجاع خطأ 400 إذا كانت البيانات غير صالحة وفقاً للمخطط الجديد
     const validationResult = BookingSchema.safeParse(body);
 
     if (!validationResult.success) {
       // إرجاع خطأ 400 مع رسالة التحقق
       const validationErrors = validationResult.error.issues
-        .map((issue) => issue.message)
+        .map((issue: { message: any }) => issue.message)
         .join("; ");
+      console.error("Zod Validation Failed:", validationResult.error.issues);
       return NextResponse.json(
         {
           success: false,
@@ -200,8 +201,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { date, city, name, email, phone, recaptchaToken } =
-      validationResult.data;
+    const { email, phone, recaptchaToken } = validationResult.data;
 
     // إنشاء مفتاح الجلسة (Session Key) من البريد الإلكتروني والهاتف
     const sessionKey = `${email}_${phone}`;
@@ -220,33 +220,21 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5. التحقق من reCAPTCHA
+    // 5. التحقق من reCAPTCHA (اختياري - لا يفشل الطلب إذا كان غير صالح)
     if (recaptchaToken) {
       const verification = await verifyRecaptchaToken(recaptchaToken);
       if (!verification.success) {
-        // تحديث قيد الجلسة عند فشل التحقق الأمني
-        updateSessionRestriction(sessionKey);
-        return NextResponse.json(
-          {
-            success: false,
-            message: "فشل التحقق الأمني. يرجى المحاولة مرة أخرى.",
-          },
-          { status: 403 }
+        console.warn(
+          `reCAPTCHA verification failed for sessionKey: ${sessionKey}. Proceeding as requested by user, but this is a security risk.`
         );
       }
-    } else {
-      // إذا كان رمز reCAPTCHA غير موجود (يفترض أن هذا مطلوب)
-      return NextResponse.json(
-        { success: false, message: "رمز التحقق الأمني (reCAPTCHA) مطلوب." },
-        { status: 403 }
-      );
     }
+    // تم إزالة شرط فشل الطلب إذا كان reCAPTCHA مفقوداً أو غير صالح.
 
     // 6. إنشاء الحجز في MongoDB (بعد جميع الفحوصات)
-    // نستخدم validationResult.data لضمان استخدام بيانات نظيفة
     const newBooking = await messages.create(validationResult.data);
 
-    // 7. تحديث قيد الجلسة (15 دقيقة) بعد الإرسال الناجح
+    // 7. تحديث قيد الجلسة (15 دقيقة) بعد الإرسال الناجح (مهم لفرض الربع ساعة انتظار)
     updateSessionRestriction(sessionKey);
 
     return NextResponse.json(
@@ -259,7 +247,7 @@ export async function POST(req: Request) {
     );
   } catch (error) {
     console.error("POST /booking error:", error);
-    // عند حدوث خطأ داخلي في الخادم، لا نطبق قيد الجلسة لتجنب حظر المستخدمين لأسباب غير واضحة
+    // عند حدوث خطأ داخلي في الخادم
     return NextResponse.json(
       { success: false, message: "فشل إنشاء الحجز بسبب خطأ داخلي في الخادم." },
       { status: 500 }

@@ -34,7 +34,7 @@ interface CoursesTableProps {
 
 export default function CoursesTable({ filters }: CoursesTableProps) {
   const { i18n } = useTranslation();
-  const lang = i18n.language || "ar";
+  const lang = (i18n.language === "ar" ? "ar" : "en") as "ar" | "en";
   const isArabic = lang === "ar";
 
   const [dataCourses, setDataCourses] = useState<CourseData[]>([]);
@@ -254,69 +254,68 @@ export default function CoursesTable({ filters }: CoursesTableProps) {
                 <tbody>
                   {/* ✅ تم إضافة Array.isArray() هنا لحل مشكلة TypeError */}
                   {Array.isArray(filteredCourses) &&
-                    filteredCourses.map((course) => (
-                      <tr
-                        key={course._id}
-                        className="transition-colors border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/50"
-                      >
-                        <td className="px-6 py-4">
-                          <div>
-                            <h3 className="mb-1 font-semibold text-gray-900 dark:text-white">
-                              {course.name}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                <span>{t.weekLabel}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Users className="w-3 h-3" />
-                                <span>{t.multiDateLabel}</span>
+                    filteredCourses
+                      .slice(0, 15) // 👈 هذا هو التعديل الوحيد المطلوب
+                      .map((course) => (
+                        <tr
+                          key={course._id}
+                          className="transition-colors border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/50"
+                        >
+                          <td className="px-6 py-4">
+                            <div>
+                              <h3 className="mb-1 font-semibold text-gray-900 dark:text-white">
+                                {course.name}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{t.weekLabel}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  <span>{t.multiDateLabel}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge className={getSectionColor(course.section)}>
-                            {course.section}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-royal-500 dark:text-royal-400" />
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              {course.city}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge className={getSectionColor(course.section)}>
+                              {course.section}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-royal-500 dark:text-royal-400" />
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {course.city}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-lg font-bold text-royal-600 dark:text-royal-400">
+                              £ {course.price}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-lg font-bold text-royal-600 dark:text-royal-400">
-                            £ {course.price}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <Button
-                            size="sm"
-                            className="bg-royal-500 hover:bg-royal-600 dark:bg-royal-600 dark:hover:bg-royal-700"
-                          >
-                            <Link
-                              href={buildCourseUrl(
-                                course.slug,
-                                lang as "ar" | "en"
-                              )}
-                              className="flex items-center gap-2"
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <Button
+                              size="sm"
+                              className="bg-royal-500 hover:bg-royal-600 dark:bg-royal-600 dark:hover:bg-royal-700"
                             >
-                              {t.viewDetails}
-                              {isArabic ? (
-                                <ArrowLeft className="w-3 h-3" />
-                              ) : (
-                                <ArrowRight className="w-3 h-3" />
-                              )}
-                            </Link>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                              <Link
+                                href={buildCourseUrl(course.slug, lang)}
+                                className="flex items-center gap-2"
+                              >
+                                {t.viewDetails}
+                                {isArabic ? (
+                                  <ArrowLeft className="w-3 h-3" />
+                                ) : (
+                                  <ArrowRight className="w-3 h-3" />
+                                )}
+                              </Link>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
                 </tbody>
               </table>
             </div>

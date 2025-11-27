@@ -12,6 +12,7 @@ import {
   ReactElement,
   ReactPortal,
 } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CourseImageCarousel from "@/components/course-image-carousel";
 import { useReCaptcha } from "@/components/ReCaptchaProvider";
 import { RECAPTCHA_CONFIG } from "@/lib/recaptcha-config";
+import Marquee from "react-fast-marquee";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -93,6 +95,7 @@ interface ICourseDetails {
     ar: ITranslation;
     en: ITranslation;
   };
+  images?: string[];
 }
 
 interface DateOption {
@@ -463,7 +466,7 @@ export default function EventPage({
 
   // Scroll to top when component mounts
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   // GSAP Animations (Keeping the original structure)
@@ -733,7 +736,10 @@ export default function EventPage({
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const { executeRecaptcha } = useReCaptcha(RECAPTCHA_CONFIG.siteKey, 'booking');
+  const { executeRecaptcha } = useReCaptcha(
+    RECAPTCHA_CONFIG.siteKey,
+    "booking"
+  );
 
   // 💡 دالة معالجة الإرسال (handleSubmit)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -741,7 +747,11 @@ export default function EventPage({
 
     // 🛡️ التحقق المبدئي على العميل لمنع الإرسال الفارغ
     if (!date || !city || !name || !email || !phone) {
-      alert(isArabic ? "يرجى ملء جميع الحقول المطلوبة" : "Please fill all required fields");
+      alert(
+        isArabic
+          ? "يرجى ملء جميع الحقول المطلوبة"
+          : "Please fill all required fields"
+      );
       return;
     }
 
@@ -750,9 +760,13 @@ export default function EventPage({
     try {
       // 🔒 Get reCAPTCHA token
       const recaptchaToken = await executeRecaptcha();
-      
+
       if (!recaptchaToken) {
-        alert(isArabic ? "فشل التحقق من الأمان. يرجى المحاولة مرة أخرى." : "Security verification failed. Please try again.");
+        alert(
+          isArabic
+            ? "فشل التحقق من الأمان. يرجى المحاولة مرة أخرى."
+            : "Security verification failed. Please try again."
+        );
         setLoading(false);
         return;
       }
@@ -763,7 +777,14 @@ export default function EventPage({
           "Content-Type": "application/json",
         },
         // 💡 إرسال البيانات المجمعة مع reCAPTCHA token
-        body: JSON.stringify({ date, city, name, email, phone, recaptchaToken }),
+        body: JSON.stringify({
+          date,
+          city,
+          name,
+          email,
+          phone,
+          recaptchaToken,
+        }),
       });
 
       const data = await res.json();
@@ -776,7 +797,7 @@ export default function EventPage({
         setName("");
         setEmail("");
         setPhone("");
-        router.push("/courses");
+        router.push("/ar/courses");
       } else {
         // 🛡️ استخدام رسالة خطأ من الخادم إن وُجدت
         alert(data.message || "حدث خطأ أثناء إرسال الحجز");
@@ -802,22 +823,22 @@ export default function EventPage({
       />
 
       <main
-        className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden"
+        className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
         dir={isArabic ? "rtl" : "ltr"}
       >
         {/* Enhanced Floating Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 right-10 w-24 h-24 bg-gradient-to-br from-royal-200/10 to-royal-300/5 dark:from-royal-600/10 dark:to-royal-700/5 rounded-full blur-2xl animate-float-slow shadow-lg"></div>
-          <div className="absolute bottom-20 left-10 w-20 h-20 bg-gradient-to-br from-crimson-200/10 to-crimson-300/5 dark:from-crimson-600/10 dark:to-crimson-700/5 rounded-full blur-xl animate-float-medium shadow-md"></div>
-          <div className="absolute top-1/3 left-1/4 w-16 h-16 bg-gradient-to-br from-royal-300/8 to-royal-400/3 dark:from-royal-700/8 dark:to-royal-800/3 rounded-full blur-lg animate-float-fast shadow-sm"></div>
-          <div className="absolute bottom-40 right-1/3 w-28 h-28 bg-gradient-to-br from-crimson-300/8 to-crimson-400/3 dark:from-crimson-700/8 dark:to-crimson-800/3 rounded-full blur-2xl animate-float-slow shadow-lg"></div>
-          <div className="absolute top-2/3 right-1/4 w-18 h-18 bg-gradient-to-br from-royal-200/8 to-royal-300/4 dark:from-royal-600/8 dark:to-royal-700/4 rounded-full blur-md animate-float-medium shadow-md"></div>
-          <div className="absolute top-1/4 right-1/2 w-14 h-14 bg-gradient-to-br from-crimson-200/6 to-crimson-300/3 dark:from-crimson-600/6 dark:to-crimson-700/3 rounded-full blur-lg animate-float-fast shadow-sm"></div>
+          <div className="absolute w-24 h-24 rounded-full shadow-lg top-10 right-10 bg-gradient-to-br from-royal-200/10 to-royal-300/5 dark:from-royal-600/10 dark:to-royal-700/5 blur-2xl animate-float-slow"></div>
+          <div className="absolute w-20 h-20 rounded-full shadow-md bottom-20 left-10 bg-gradient-to-br from-crimson-200/10 to-crimson-300/5 dark:from-crimson-600/10 dark:to-crimson-700/5 blur-xl animate-float-medium"></div>
+          <div className="absolute w-16 h-16 rounded-full shadow-sm top-1/3 left-1/4 bg-gradient-to-br from-royal-300/8 to-royal-400/3 dark:from-royal-700/8 dark:to-royal-800/3 blur-lg animate-float-fast"></div>
+          <div className="absolute rounded-full shadow-lg bottom-40 right-1/3 w-28 h-28 bg-gradient-to-br from-crimson-300/8 to-crimson-400/3 dark:from-crimson-700/8 dark:to-crimson-800/3 blur-2xl animate-float-slow"></div>
+          <div className="absolute rounded-full shadow-md top-2/3 right-1/4 w-18 h-18 bg-gradient-to-br from-royal-200/8 to-royal-300/4 dark:from-royal-600/8 dark:to-royal-700/4 blur-md animate-float-medium"></div>
+          <div className="absolute rounded-full shadow-sm top-1/4 right-1/2 w-14 h-14 bg-gradient-to-br from-crimson-200/6 to-crimson-300/3 dark:from-crimson-600/6 dark:to-crimson-700/3 blur-lg animate-float-fast"></div>
         </div>
 
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-royal-900 via-navy-800 to-royal-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-white py-20 relative overflow-hidden">
-          <div className="container mx-auto px-4">
+        <section className="relative py-20 overflow-hidden text-white bg-gradient-to-br from-royal-900 via-navy-800 to-royal-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+          <div className="container px-4 mx-auto">
             <div className="max-w-4xl mx-auto text-center">
               <div ref={heroBadgeRef}>
                 <Badge className={`${getSectionColor(course.section)} mb-4`}>
@@ -826,20 +847,20 @@ export default function EventPage({
               </div>
               <h1
                 ref={heroTitleRef}
-                className="text-4xl lg:text-5xl font-bold mb-6"
+                className="mb-6 text-4xl font-bold lg:text-5xl"
               >
                 {course.name}
               </h1>
               <p
                 ref={heroDescRef}
-                className="text-xl text-gray-200 dark:text-gray-300 mb-8"
+                className="mb-8 text-xl text-gray-200 dark:text-gray-300"
               >
                 {course.description}
               </p>
 
               <div
                 ref={heroStatsRef}
-                className="grid md:grid-cols-3 gap-6 mb-8"
+                className="grid gap-6 mb-8 md:grid-cols-3"
               >
                 <div className="text-center">
                   <Calendar className="w-8 h-8 mx-auto mb-2 text-royal-300 dark:text-royal-400" />
@@ -870,23 +891,45 @@ export default function EventPage({
         </section>
 
         {/* قسم الصور المتحركة */}
-        <CourseImageCarousel
-          images={[
-            "/placeholder.svg?height=300&width=500&text=Course+Image+1",
-            "/placeholder.svg?height=300&width=500&text=Course+Image+2",
-            "/placeholder.svg?height=300&width=500&text=Course+Image+3",
-            "/placeholder.svg?height=300&width=500&text=Course+Image+4",
-            "/placeholder.svg?height=300&width=500&text=Course+Image+5",
-          ]}
-          speed={40}
-        />
+        <div className="py-8">
+               
+          <Marquee // 🚀 سرعة العرض: استخدمنا هنا الخاصية التي طلبتها (speed={40})
+            speed={20}
+            pauseOnHover={true}
+            autoFill={true}
+          >
+                   
+            {
+              // 🔑 نستخدم courseData.images لإنشاء عناصر الصورة
+              (courseData.images || []).map(
+                (imageUrl: string, index: number) => (
+                  <div key={index} className="flex-shrink-0 mx-4">
+                                 
+                    {/* 💡 استخدم مكون الصورة الذي تفضله (مثلاً: Next.js Image أو <img> عادي) */}
+                                 
+                    <Image
+                      src={imageUrl}
+                      alt={`Course Image ${index + 1}`}
+                      className="object-cover w-auto h-40 border border-gray-200 rounded-lg shadow-lg dark:border-gray-700"
+                      width={160}
+                      height={160}
+                    />
+                               
+                  </div>
+                )
+              )
+            }
+                 
+          </Marquee>
+             
+        </div>
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          <div className="grid lg:grid-cols-4 gap-8">
+        <div className="container relative z-10 px-4 py-12 mx-auto">
+          <div className="grid gap-8 lg:grid-cols-4">
             {/* Main Content */}
-            <div className="lg:col-span-3 space-y-8">
+            <div className="space-y-8 lg:col-span-3">
               {/* Course Importance */}
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={importanceTitleRef}
@@ -899,7 +942,7 @@ export default function EventPage({
                 <CardContent>
                   <p
                     ref={importanceDescRef}
-                    className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed"
+                    className="mb-4 leading-relaxed text-gray-600 dark:text-gray-300"
                   >
                     {t.importanceDesc}
                   </p>
@@ -917,7 +960,7 @@ export default function EventPage({
               </Card>
 
               {/* Course Objectives */}
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={objectivesTitleRef}
@@ -945,7 +988,7 @@ export default function EventPage({
 
               {/* لمن هذه الدورة / Who Should Attend */}
               {course.targetAudience && course.targetAudience.length > 0 && (
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                       <Target className="w-6 h-6 text-royal-500 dark:text-royal-400" />
@@ -970,7 +1013,7 @@ export default function EventPage({
               )}
 
               {/* Course Outcomes */}
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={outcomesTitleRef}
@@ -983,13 +1026,13 @@ export default function EventPage({
                 <CardContent>
                   <p
                     ref={outcomesDescRef}
-                    className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed"
+                    className="mb-4 leading-relaxed text-gray-600 dark:text-gray-300"
                   >
                     {t.afterCompletion}
                   </p>
                   <div
                     ref={outcomesListRef}
-                    className="grid md:grid-cols-2 gap-4"
+                    className="grid gap-4 md:grid-cols-2"
                   >
                     {course.outcomes.map((outcome: string, index: number) => (
                       <div key={index} className="flex items-start gap-3">
@@ -1004,7 +1047,7 @@ export default function EventPage({
               </Card>
 
               {/* Course Modules */}
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={modulesTitleRef}
@@ -1026,7 +1069,7 @@ export default function EventPage({
                         }-4`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {module.title}
                           </h3>
                           <Badge
@@ -1056,7 +1099,7 @@ export default function EventPage({
               </Card>
 
               {/* Services */}
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={servicesTitleRef}
@@ -1069,13 +1112,13 @@ export default function EventPage({
                 <CardContent>
                   <p
                     ref={servicesDescRef}
-                    className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed"
+                    className="mb-4 leading-relaxed text-gray-600 dark:text-gray-300"
                   >
                     {t.servicesDesc}
                   </p>
                   <div
                     ref={servicesListRef}
-                    className="grid md:grid-cols-2 gap-4"
+                    className="grid gap-4 md:grid-cols-2"
                   >
                     {course.services.map((service: string, index: number) => (
                       <div key={index} className="flex items-start gap-3">
@@ -1090,7 +1133,7 @@ export default function EventPage({
               </Card>
 
               {/* Instructor */}
-              {/* <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              {/* <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={instructorTitleRef}
@@ -1107,16 +1150,16 @@ export default function EventPage({
                     <img
                       src={course.instructor.image || "/placeholder.svg"}
                       alt={course.instructor.name}
-                      className="w-20 h-20 rounded-full object-cover"
+                      className="object-cover w-20 h-20 rounded-full"
                     />
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {course.instructor.name}
                       </h3>
-                      <p className="text-royal-600 dark:text-royal-400 font-medium">
+                      <p className="font-medium text-royal-600 dark:text-royal-400">
                         {course.instructor.title}
                       </p>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="mt-1 text-gray-600 dark:text-gray-400">
                         {course.instructor.experience}
                       </p>
                     </div>
@@ -1125,7 +1168,7 @@ export default function EventPage({
               </Card> */}
 
               {/* FAQ */}
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle
                     ref={faqTitleRef}
@@ -1139,12 +1182,12 @@ export default function EventPage({
                     {t.staticFaq.map((item: any, index: number) => (
                       <div
                         key={index}
-                        className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0"
+                        className="pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0"
                       >
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-lg">
+                        <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
                           {item.question}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p className="leading-relaxed text-gray-600 dark:text-gray-400">
                           {item.answer}
                         </p>
                       </div>
@@ -1158,7 +1201,7 @@ export default function EventPage({
             <div className="lg:col-span-1">
               <div className="space-y-6 lg:sticky lg:top-8">
                 {/* Booking Form */}
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                   <CardHeader>
                     <div
                       ref={bookingHeaderRef}
@@ -1181,7 +1224,7 @@ export default function EventPage({
                     >
                       {/* التاريخ */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {t.selectDate} <span className="text-red-500">*</span>
                         </label>
                         <Select onValueChange={setDate} value={date}>
@@ -1206,7 +1249,7 @@ export default function EventPage({
 
                       {/* المدينة */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {t.selectCity} <span className="text-red-500">*</span>
                         </label>
                         <Select onValueChange={setCity} value={city}>
@@ -1231,7 +1274,7 @@ export default function EventPage({
 
                       {/* الاسم */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {t.name} {t.required}
                         </label>
                         <Input
@@ -1245,7 +1288,7 @@ export default function EventPage({
 
                       {/* الايميل */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {t.email} {t.required}
                         </label>
                         <Input
@@ -1260,7 +1303,7 @@ export default function EventPage({
 
                       {/* الهاتف */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {t.phone} {t.required}
                         </label>
                         <Input
@@ -1285,7 +1328,7 @@ export default function EventPage({
                 </Card>
 
                 {/* Course Information */}
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                   <CardHeader>
                     <CardTitle
                       ref={infoTitleRef}
@@ -1300,29 +1343,29 @@ export default function EventPage({
                       className="space-y-3 text-gray-700 dark:text-gray-300"
                     >
                       <div className="flex items-center gap-3">
-                        <Globe className="w-5 h-5 text-royal-500 flex-shrink-0" />
+                        <Globe className="flex-shrink-0 w-5 h-5 text-royal-500" />
                         <span className="font-medium">
                           {t.trainingLanguage}:
                         </span>
                         <span>{course.language}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-royal-500 flex-shrink-0" />
+                        <MapPin className="flex-shrink-0 w-5 h-5 text-royal-500" />
                         <span className="font-medium">{t.venue}:</span>
                         <span>{course.venue}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Award className="w-5 h-5 text-royal-500 flex-shrink-0" />
+                        <Award className="flex-shrink-0 w-5 h-5 text-royal-500" />
                         <span className="font-medium">{t.certificate}:</span>
                         <span>{course.certificate}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-royal-500 flex-shrink-0" />
+                        <Clock className="flex-shrink-0 w-5 h-5 text-royal-500" />
                         <span className="font-medium">{t.duration}:</span>
                         <span>{course.duration}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Star className="w-5 h-5 text-royal-500 flex-shrink-0" />
+                        <Star className="flex-shrink-0 w-5 h-5 text-royal-500" />
                         <span className="font-medium">{t.participants}:</span>
                         <span>{course.participants}</span>
                       </div>
@@ -1331,7 +1374,7 @@ export default function EventPage({
                 </Card>
 
                 {/* Course Includes */}
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                   <CardHeader>
                     <CardTitle
                       ref={includesTitleRef}
@@ -1375,11 +1418,11 @@ export default function EventPage({
                 </Card>
 
                 {/* Contact */}
-                <Card className="bg-crimson-500 dark:bg-crimson-700 text-white shadow-xl border-0">
+                <Card className="text-white border-0 shadow-xl bg-crimson-500 dark:bg-crimson-700">
                   <CardHeader>
                     <CardTitle
                       ref={contactTitleRef}
-                      className="text-white text-center"
+                      className="text-center text-white"
                     >
                       {t.needHelp}
                     </CardTitle>
@@ -1403,7 +1446,7 @@ export default function EventPage({
                       </div>
                       <Button
                         variant="secondary"
-                        className="w-full mt-4 bg-white/20 hover:bg-white/30 text-white"
+                        className="w-full mt-4 text-white bg-white/20 hover:bg-white/30"
                       >
                         {t.contactUs}
                       </Button>
@@ -1412,7 +1455,7 @@ export default function EventPage({
                 </Card>
 
                 {/* Related Courses */}
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                   <CardHeader>
                     <CardTitle
                       ref={relatedTitleRef}
@@ -1427,7 +1470,7 @@ export default function EventPage({
                         <Link
                           key={related.id}
                           href={`/course/${related.slug}`} // Assuming slug is the new route param
-                          className="block p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                          className="block p-3 transition rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           <p className="font-medium text-gray-900 dark:text-white">
                             {related.name}
@@ -1443,7 +1486,7 @@ export default function EventPage({
                       ))}
                       <Link
                         href="/courses"
-                        className="block text-center pt-2 text-royal-600 dark:text-royal-400 hover:underline text-sm"
+                        className="block pt-2 text-sm text-center text-royal-600 dark:text-royal-400 hover:underline"
                       >
                         {t.viewAllCourses}
                       </Link>
