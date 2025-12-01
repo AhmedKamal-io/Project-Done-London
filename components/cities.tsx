@@ -59,7 +59,7 @@ const translations: any = {
         country: "إيطاليا",
         timezone: "CET",
         nextCourse: "12 فبراير 2025",
-        key: "rome",
+        key: "roma",
       },
       {
         name: "برشلونة",

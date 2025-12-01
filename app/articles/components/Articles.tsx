@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
 import { useRef, useEffect } from "react";
-import Image from "next/image";;
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -177,30 +177,30 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
       className={`min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 transition-colors`}
     >
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-royal-900 via-navy-800 to-royal-800 text-white py-20 dark:from-royal-950 dark:via-navy-900 dark:to-royal-900 overflow-hidden">
+      <section className="relative py-20 overflow-hidden text-white bg-gradient-to-br from-royal-900 via-navy-800 to-royal-800 dark:from-royal-950 dark:via-navy-900 dark:to-royal-900">
         <AnimatedBackground variant="orbs" />
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="container relative z-10 px-4 mx-auto text-center">
           <h1
             ref={heroTitleRef}
-            className="text-4xl lg:text-6xl font-bold mb-6"
+            className="mb-6 text-4xl font-bold lg:text-6xl"
           >
             {lang.heroTitle}
           </h1>
           <p
             ref={heroSubtitleRef}
-            className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed dark:text-gray-300"
+            className="max-w-3xl mx-auto text-xl leading-relaxed text-gray-200 dark:text-gray-300"
           >
             {lang.heroSubtitle}
           </p>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container px-4 py-16 mx-auto">
         {/* Search + Filter (لم يتغير) */}
-        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg mb-12">
+        <Card className="mb-12 border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
                 <Search
                   className={`absolute ${
                     isArabic ? "left-3" : "right-3"
@@ -213,7 +213,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                   } dark:bg-gray-900 dark:text-white dark:border-gray-700`}
                 />
               </div>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              <div className="flex flex-wrap justify-center gap-2 md:justify-start">
                 {lang.categories.map((category, i) => (
                   <Button
                     key={i}
@@ -238,18 +238,18 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
           <>
             <h2
               ref={featuredTitleRef}
-              className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8"
+              className="mb-8 text-3xl font-bold text-gray-900 dark:text-gray-100"
             >
               {lang.featuredTitle}
             </h2>
             <div
               ref={featuredArticlesRef}
-              className="grid md:grid-cols-2 gap-8 mb-16"
+              className="grid gap-8 mb-16 md:grid-cols-2"
             >
               {featuredArticles.map((article) => (
                 <Card
                   key={article._id} // استخدام _id
-                  className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden"
+                  className="overflow-hidden transition-all duration-500 border-0 group hover:shadow-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
                 >
                   <div className="relative overflow-hidden">
                     <Image
@@ -257,7 +257,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                       alt={getArticleTitle(article)}
                       width={400}
                       height={256}
-                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover w-full h-64 transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute top-4 right-4">
                       <Badge
@@ -269,7 +269,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                     </div>
                     {article.specialTag && ( // عرض "Featured" بناءً على specialTag
                       <div className="absolute top-4 left-4">
-                        <Badge className="bg-royal-500 text-white dark:bg-royal-600">
+                        <Badge className="text-white bg-royal-500 dark:bg-royal-600">
                           {isArabic ? "مميز" : "Featured"}
                         </Badge>
                       </div>
@@ -277,10 +277,10 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                   </div>
 
                   <CardContent className="p-6">
-                    <h3 className="article-title text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-royal-700 dark:group-hover:text-royal-400 transition-colors">
+                    <h3 className="mb-3 text-xl font-bold text-gray-900 transition-colors article-title dark:text-white group-hover:text-royal-700 dark:group-hover:text-royal-400">
                       {getArticleTitle(article)} {/* العنوان المترجم */}
                     </h3>
-                    <p className="article-excerpt text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                    <p className="mb-4 text-sm leading-relaxed text-gray-600 article-excerpt dark:text-gray-300">
                       {getArticleDesc(article)} {/* الوصف المترجم */}
                     </p>
                     <div
@@ -307,7 +307,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full group-hover:bg-royal-50 group-hover:border-royal-300 bg-transparent dark:group-hover:bg-royal-900 dark:border-gray-700 dark:text-gray-200"
+                      className="w-full bg-transparent group-hover:bg-royal-50 group-hover:border-royal-300 dark:group-hover:bg-royal-900 dark:border-gray-700 dark:text-gray-200"
                     >
                       <Link
                         href={`/articles/${article._id}`}
@@ -331,18 +331,18 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
         {/* Regular Articles */}
         <h2
           ref={allArticlesTitleRef}
-          className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8"
+          className="mb-8 text-3xl font-bold text-gray-900 dark:text-gray-100"
         >
           {lang.allArticles}
         </h2>
         <div
           ref={regularArticlesRef}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
         >
           {regularArticles.map((article) => (
             <Card
               key={article._id}
-              className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden"
+              className="overflow-hidden transition-all duration-500 border-0 group hover:shadow-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
             >
               <div className="relative overflow-hidden">
                 <Image
@@ -350,7 +350,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                   alt={getArticleTitle(article)}
                   width={400}
                   height={192}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="object-cover w-full h-48 transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute top-4 right-4">
                   <Badge className={getCategoryColor(article.categoryArticle)}>
@@ -361,10 +361,10 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
               </div>
 
               <CardContent className="p-6">
-                <h3 className="article-title text-lg font-bold text-gray-900 dark:text-white mb-3 group-hover:text-royal-700 dark:group-hover:text-royal-400 transition-colors">
+                <h3 className="mb-3 text-lg font-bold text-gray-900 transition-colors article-title dark:text-white group-hover:text-royal-700 dark:group-hover:text-royal-400">
                   {getArticleTitle(article)}
                 </h3>
-                <p className="article-excerpt text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                <p className="mb-4 text-sm leading-relaxed text-gray-600 article-excerpt dark:text-gray-300">
                   {getArticleDesc(article)}
                 </p>
                 <div
@@ -391,7 +391,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full group-hover:bg-royal-50 group-hover:border-royal-300 bg-transparent dark:group-hover:bg-royal-900 dark:border-gray-700 dark:text-gray-200"
+                  className="w-full bg-transparent group-hover:bg-royal-50 group-hover:border-royal-300 dark:group-hover:bg-royal-900 dark:border-gray-700 dark:text-gray-200"
                 >
                   <Link
                     href={`/articles/${article._id}`}
@@ -411,14 +411,14 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
         </div>
 
         {/* Newsletter (لم يتغير) */}
-        <Card className="mt-16 bg-gradient-to-br from-royal-500 to-crimson-500 text-white border-0 dark:from-royal-800 dark:to-crimson-700">
+        <Card className="mt-16 text-white border-0 bg-gradient-to-br from-royal-500 to-crimson-500 dark:from-royal-800 dark:to-crimson-700">
           <CardContent className="p-12 text-center">
-            <h2 ref={newsletterTitleRef} className="text-3xl font-bold mb-4">
+            <h2 ref={newsletterTitleRef} className="mb-4 text-3xl font-bold">
               {lang.newsletterTitle}
             </h2>
             <p
               ref={newsletterSubtitleRef}
-              className="text-xl text-white/90 mb-8"
+              className="mb-8 text-xl text-white/90"
             >
               {lang.newsletterSubtitle}
             </p>
@@ -429,7 +429,7 @@ export default function ArticlesPage({ articles = [] }: ArticlesPageProps) {
             >
               <Input
                 placeholder={lang.emailPlaceholder}
-                className="bg-white/20 border-white/30 text-white placeholder:text-white/70 dark:bg-gray-900/40"
+                className="text-white bg-white/20 border-white/30 placeholder:text-white/70 dark:bg-gray-900/40"
               />
               <Button className="bg-white text-royal-600 hover:bg-gray-100 dark:bg-gray-100 dark:text-royal-800">
                 {lang.subscribeNow}

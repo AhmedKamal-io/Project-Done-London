@@ -75,6 +75,16 @@ export default function Articles({
     },
   };
 
+  // 💡 خريطة لترجمة فئة المقال من العربية إلى الإنجليزية
+  const categoryMap: Record<string, string> = {
+    "التواصل المؤسسي": "Corporate Communication",
+    "الذكاء الاصطناعي": "Artificial Intelligence",
+    "المراسم والإتيكيت": "Etiquette & Protocol",
+    "التسويق الرقمي": "Digital Marketing",
+    "إدارة الأزمات": "Crisis Management",
+    الإعلام: "Media",
+  };
+
   const t = translations[lng];
 
   // دالة لمساعدتك في تنسيق التاريخ
@@ -156,15 +166,15 @@ export default function Articles({
       dir={isArabic ? "rtl" : "ltr"}
     >
       {/* ... (Backgrounds) ... */}
-      <div className="absolute top-20 right-20 w-72 h-72 bg-emerald-100/30 dark:bg-emerald-900/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 left-20 w-96 h-96 bg-purple-100/30 dark:bg-purple-900/20 rounded-full blur-3xl"></div>
+      <div className="absolute rounded-full top-20 right-20 w-72 h-72 bg-emerald-100/30 dark:bg-emerald-900/20 blur-3xl"></div>
+      <div className="absolute rounded-full bottom-20 left-20 w-96 h-96 bg-purple-100/30 dark:bg-purple-900/20 blur-3xl"></div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div ref={headingRef} className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+      <div className="container relative z-10 px-4 mx-auto">
+        <div ref={headingRef} className="mb-16 text-center">
+          <h2 className="mb-6 text-4xl font-bold text-gray-900 lg:text-5xl dark:text-white">
             {t.sectionTitle}
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="max-w-3xl mx-auto text-xl leading-relaxed text-gray-600 dark:text-gray-300">
             {t.sectionSubtitle}
           </p>
         </div>
@@ -172,7 +182,7 @@ export default function Articles({
         {/* 🏆 هنا يتم استخدام الـ ref والتحقق من articles.slice */}
         <div
           ref={articlesGridRef}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
+          className="grid gap-8 mb-12 md:grid-cols-2 lg:grid-cols-3"
         >
           {articles.slice(0, 3).map((article) => {
             const title = isArabic
@@ -181,43 +191,49 @@ export default function Articles({
             const excerpt = isArabic
               ? article.arArticleDesc
               : article.enArticleDesc;
-            const articleLink = isArabic ? `/ar/articles/${article._id}` : `/articles/${article._id}`;
+            const articleLink = isArabic
+              ? `/ar/articles/${article._id}`
+              : `/articles/${article._id}`;
 
             return (
               <Card
                 key={article._id}
-                className="group hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm overflow-hidden"
+                className="overflow-hidden transition-all duration-500 border border-gray-100 group hover:shadow-2xl dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm"
               >
                 <div className="relative overflow-hidden">
                   <img
                     // ✅ استخدام blogImage.url بأمان
                     src={article.blogImage?.url || "/placeholder.svg"}
                     alt={title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="object-cover w-full h-48 transition-transform duration-500 group-hover:scale-110"
                   />
                   <div
                     className={`absolute top-4 ${
                       isArabic ? "left-4" : "right-4"
                     }`}
                   >
-                    <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                      {article.categoryArticle}
+                    <span className="px-3 py-1 text-xs font-medium text-white rounded-full bg-emerald-500">
+                      {/* 💡 التعديل هنا: تطبيق الترجمة على الفئة */}
+                      {isArabic
+                        ? article.categoryArticle
+                        : categoryMap[article.categoryArticle] ||
+                          article.categoryArticle}
                     </span>
                   </div>
                 </div>
 
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors leading-tight">
+                  <CardTitle className="text-lg font-bold leading-tight text-gray-900 transition-colors dark:text-gray-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
                     {title}
                   </CardTitle>
                 </CardHeader>
 
                 <CardContent className="pt-0">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
+                  <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                     {excerpt}
                   </p>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  <div className="flex items-center justify-between mb-4 text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <User className="w-3 h-3" />
@@ -237,7 +253,7 @@ export default function Articles({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full text-gray-900 border-gray-200 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20 dark:border-gray-700 dark:text-gray-100"
                   >
                     <Link
                       href={articleLink}
@@ -259,9 +275,12 @@ export default function Articles({
           <Button
             size="lg"
             variant="outline"
-            className="px-8 py-4 text-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+            className="px-8 py-4 text-lg bg-transparent border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
           >
-            <Link href={isArabic ? '/ar/articles' : '/articles'} className="flex items-center gap-2">
+            <Link
+              href={isArabic ? "/ar/articles" : "/articles"}
+              className="flex items-center gap-2"
+            >
               {t.viewAll}
               <ArrowLeft
                 className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`}

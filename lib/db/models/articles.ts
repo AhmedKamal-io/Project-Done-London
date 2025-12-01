@@ -27,7 +27,6 @@ const articlesSchema = new Schema(
     categoryArticle: { type: String, required: true },
     specialTag: { type: Boolean, default: false },
 
-    // ** الحقول الجديدة: الكلمات المفتاحية بالعربية والإنجليزية
     //  استخدام مصفوفة من السلاسل النصية للسماح بأكثر من كلمة مفتاحية (3 أو أكثر)
     arKeywords: {
       type: [String], // مصفوفة من السلاسل النصية

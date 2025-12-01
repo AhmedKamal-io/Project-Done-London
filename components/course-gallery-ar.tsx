@@ -107,11 +107,10 @@ export default function CourseGallery({ moments, language = "ar" }: Props) {
         <div className="container relative z-10 px-4 mx-auto">
           <div ref={headingRef} className="mb-16 text-center">
             <h2 className="mb-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-              Moments from Our Past Courses
+              لحظات من دوراتنا السابقة
             </h2>
             <p className="max-w-3xl mx-auto text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-              See photos from our training programs held in major international
-              cities
+              شاهد صور من الدورات التدريبية التي أقمناها في مختلف المدن العالمية
             </p>
           </div>
 

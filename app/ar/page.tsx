@@ -6,7 +6,7 @@ import ClientsStrip from "@/components/clients-strip";
 import type { ILeadingCompany } from "@/components/clients-strip";
 import InternationalAccreditations from "@/components/international-accreditations";
 import type { AccreditationItem } from "@/components/international-accreditations";
-import CourseGallery from "@/components/course-gallery";
+import CourseGallery from "@/components/course-gallery-ar";
 import type { IGalleryMoment } from "@/components/course-gallery";
 import Articles from "@/components/articles";
 import ContactCTA from "@/components/contact-cta";
