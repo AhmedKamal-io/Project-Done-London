@@ -89,6 +89,7 @@ interface ITranslation {
 }
 
 interface ICourseDetails {
+  trainer: any;
   _id: string;
   slug: { ar: string; en: string };
   translations: {
@@ -144,6 +145,16 @@ interface TranslationProps {
   bookNow: string;
 }
 
+interface IInstructor {
+  _id: string;
+  name_ar: string;
+  name_en: string;
+  experience_ar: string;
+  experience_en: string;
+  linkedin_url: string;
+  image_url: string;
+}
+
 interface CourseProps {
   duration: any;
   city: ReactNode;
@@ -179,6 +190,7 @@ interface CoursePageProps {
     success: boolean;
     data: ICourseDetails;
   };
+  instructor?: IInstructor;
 }
 
 // 💡 MOCK RELATED COURSES (Needed for the Related Courses section)
@@ -219,6 +231,7 @@ const mockRelatedCourses = {
 export default function EventPage({
   params,
   course: serverCourse,
+  instructor,
 }: CoursePageProps) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "ar") as "ar" | "en";
@@ -647,17 +660,6 @@ export default function EventPage({
         streetAddress: "123 Oxford Street",
       },
     },
-    // instructor: {
-    //   "@type": "Person",
-    //   name: course.instructor.name,
-    //   jobTitle: course.instructor.title,
-    //   worksFor: {
-    //     "@type": "Organization",
-    //     name: isArabic
-    //       ? "أكاديمية لندن للإعلام والعلاقات العامة"
-    //       : "London Academy of Media and Public Relations",
-    //   },
-    // },
     courseCode: `LA-${courseData._id}`, // Using MongoDB ID
     educationalLevel: "Professional",
     timeRequired: course.duration,
@@ -810,6 +812,11 @@ export default function EventPage({
     }
   };
 
+  // 1. تعريف متغير الحالة في أعلى المكون
+  const [error, setError] = useState<string | null>(null);
+  // ...
+
+  // 2. تعديل دالة useEffect لتخزين البيانات
   return (
     <>
       {/* Structured Data Scripts */}
@@ -1133,39 +1140,71 @@ export default function EventPage({
               </Card>
 
               {/* Instructor */}
-              {/* <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle
-                    ref={instructorTitleRef}
-                    className="text-gray-900 dark:text-white"
-                  >
-                    {t.instructor}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    ref={instructorInfoRef}
-                    className="flex items-start gap-4"
-                  >
-                    <img
-                      src={course.instructor.image || "/placeholder.svg"}
-                      alt={course.instructor.name}
-                      className="object-cover w-20 h-20 rounded-full"
-                    />
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {course.instructor.name}
-                      </h3>
-                      <p className="font-medium text-royal-600 dark:text-royal-400">
-                        {course.instructor.title}
-                      </p>
-                      <p className="mt-1 text-gray-600 dark:text-gray-400">
-                        {course.instructor.experience}
-                      </p>
+              {instructor ? (
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle
+                      ref={instructorTitleRef}
+                      className="text-gray-900 dark:text-white"
+                    >
+                      {t.instructor}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <a
+                      href={instructor?.linkedin_url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <div
+                        ref={instructorInfoRef}
+                        className="flex items-start gap-4"
+                      >
+                        <img
+                          src={instructor?.image_url ?? "/placeholder.svg"}
+                          alt={
+                            (isArabic
+                              ? instructor?.name_ar
+                              : instructor?.name_en) || ""
+                          }
+                          className="object-cover w-20 h-20 rounded-full"
+                        />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {isArabic
+                              ? instructor?.name_ar ?? instructor?.name_en
+                              : instructor?.name_en ?? instructor?.name_ar}
+                          </h3>
+
+                          <p className="mt-1 text-gray-600 dark:text-gray-400">
+                            {isArabic
+                              ? instructor?.experience_ar ??
+                                instructor?.experience_en
+                              : instructor?.experience_en ??
+                                instructor?.experience_ar}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900 dark:text-white">
+                      {t.instructor}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-center text-gray-500">
+                      {/* simple placeholder while instructor is loading */}
+                      {isArabic
+                        ? "جاري تحميل المدرب..."
+                        : "Loading instructor..."}
                     </div>
-                  </div>
-                </CardContent>
-              </Card> */}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* FAQ */}
               <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -1500,4 +1539,7 @@ export default function EventPage({
       </main>
     </>
   );
+}
+function setError(arg0: string) {
+  throw new Error("Function not implemented.");
 }

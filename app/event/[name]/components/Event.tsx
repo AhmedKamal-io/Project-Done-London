@@ -11,7 +11,6 @@ import {
   Key,
   ReactElement,
   ReactPortal,
-  lazy,
 } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,7 +50,6 @@ import CourseImageCarousel from "@/components/course-image-carousel";
 import { useReCaptcha } from "@/components/ReCaptchaProvider";
 import { RECAPTCHA_CONFIG } from "@/lib/recaptcha-config";
 import Marquee from "react-fast-marquee";
-import { register } from "module";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -91,13 +89,14 @@ interface ITranslation {
 }
 
 interface ICourseDetails {
-  images: never[];
+  trainer: any;
   _id: string;
   slug: { ar: string; en: string };
   translations: {
     ar: ITranslation;
     en: ITranslation;
   };
+  images?: string[];
 }
 
 interface DateOption {
@@ -146,6 +145,16 @@ interface TranslationProps {
   bookNow: string;
 }
 
+interface IInstructor {
+  _id: string;
+  name_ar: string;
+  name_en: string;
+  experience_ar: string;
+  experience_en: string;
+  linkedin_url: string;
+  image_url: string;
+}
+
 interface CourseProps {
   duration: any;
   city: ReactNode;
@@ -181,6 +190,7 @@ interface CoursePageProps {
     success: boolean;
     data: ICourseDetails;
   };
+  instructor?: IInstructor;
 }
 
 // 💡 MOCK RELATED COURSES (Needed for the Related Courses section)
@@ -221,6 +231,7 @@ const mockRelatedCourses = {
 export default function EventPage({
   params,
   course: serverCourse,
+  instructor,
 }: CoursePageProps) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "ar") as "ar" | "en";
@@ -629,7 +640,7 @@ export default function EventPage({
     );
   };
 
-  // 2. Structured Data (JSON-LD) - Enhanced Course Schema
+  // 2. Structured Data (JSON-LD) - Using course data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -640,42 +651,16 @@ export default function EventPage({
       name: isArabic
         ? "أكاديمية لندن للإعلام والعلاقات العامة"
         : "London Academy of Media and Public Relations",
-      url: "https://www.lampr.ac",
-      logo: "https://www.lampr.ac/logo.png",
-      sameAs: [
-        "https://www.facebook.com/londonacademy",
-        "https://www.twitter.com/londonacademy",
-        "https://www.linkedin.com/company/londonacademy",
-      ],
+      url: "https://lampr.ac",
+      logo: "https://lampr.ac/logo.png",
       address: {
         "@type": "PostalAddress",
         addressCountry: "GB",
         addressLocality: "London",
         streetAddress: "123 Oxford Street",
       },
-      contactPoint: {
-        "@type": "ContactPoint",
-        telephone: "+44-7999-958569",
-        contactType: "Customer Service",
-        availableLanguage: ["English", "Arabic"],
-      },
     },
-    instructor: course.instructor?.name
-      ? {
-          "@type": "Person",
-          name: course.instructor.name,
-          jobTitle: course.instructor.title,
-          description: course.instructor.experience,
-          image: course.instructor.image,
-          worksFor: {
-            "@type": "Organization",
-            name: isArabic
-              ? "أكاديمية لندن للإعلام والعلاقات العامة"
-              : "London Academy of Media and Public Relations",
-          },
-        }
-      : undefined,
-    courseCode: `LA-${courseData._id}`,
+    courseCode: `LA-${courseData._id}`, // Using MongoDB ID
     educationalLevel: "Professional",
     timeRequired: course.duration,
     coursePrerequisites: isArabic
@@ -693,47 +678,28 @@ export default function EventPage({
         : "EUR",
       availability: "https://schema.org/InStock",
       validFrom: new Date().toISOString(),
-      url: `https://www.lampr.ac${isArabic ? "/ar" : ""}/event/${
-        courseData.slug[lang]
-      }`,
       category: course.section,
-      priceValidUntil: new Date(
-        new Date().setFullYear(new Date().getFullYear() + 1)
-      ).toISOString(),
     },
-    hasCourseInstance: availableDates.slice(0, 3).map((dateOption) => ({
-      "@type": "CourseInstance",
-      courseMode: "https://schema.org/MixedEventAttendanceMode",
-      startDate: dateOption.value,
-      endDate: new Date(
-        new Date(dateOption.value).getTime() + 5 * 24 * 60 * 60 * 1000
-      )
-        .toISOString()
-        .split("T")[0],
-      location: {
-        "@type": "Place",
-        name: course.venue,
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: course.city,
-          addressCountry:
-            course.city.includes("London") || course.city.includes("لندن")
-              ? "GB"
-              : course.city.includes("Dubai") || course.city.includes("دبي")
-              ? "AE"
-              : "EU",
-        },
+    location: {
+      "@type": "Place",
+      name: course.venue,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: course.city,
+        addressCountry:
+          course.city.includes("London") || course.city.includes("لندن")
+            ? "GB"
+            : course.city.includes("Dubai") || course.city.includes("دبي")
+            ? "AE"
+            : "EU",
       },
-      instructor: course.instructor?.name
-        ? {
-            "@type": "Person",
-            name: course.instructor.name,
-          }
-        : undefined,
-    })),
+    },
+    startDate: availableDates[0]?.value,
+    endDate: availableDates[0]?.value,
+    duration: "P5D", // Assuming 5 days training week
+    courseMode: "Blended",
     educationalCredentialAwarded: course.certificate,
     teaches: course.objectives,
-    courseWorkload: course.duration,
     syllabusSections: course.modules.map((module: any) => ({
       "@type": "Syllabus",
       name: module.title,
@@ -746,10 +712,6 @@ export default function EventPage({
       reviewCount: "127",
       bestRating: "5",
       worstRating: "1",
-    },
-    audience: {
-      "@type": "EducationalAudience",
-      educationalRole: isArabic ? "متخصصون ومهنيون" : "Professionals",
     },
   };
 
@@ -765,42 +727,6 @@ export default function EventPage({
         text: item.answer,
       },
     })),
-  };
-
-  // Breadcrumb Schema
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: isArabic ? "الرئيسية" : "Home",
-        item: `https://www.lampr.ac${isArabic ? "/ar" : ""}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: isArabic ? "الدورات" : "Courses",
-        item: `https://www.lampr.ac${isArabic ? "/ar" : ""}/courses`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: course.section,
-        item: `https://www.lampr.ac${isArabic ? "/ar" : ""}/courses#${
-          course.section
-        }`,
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: course.name,
-        item: `https://www.lampr.ac${isArabic ? "/ar" : ""}/event/${
-          courseData.slug[lang]
-        }`,
-      },
-    ],
   };
 
   // 💡 الحالات (States) لتخزين بيانات النموذج
@@ -873,7 +799,7 @@ export default function EventPage({
         setName("");
         setEmail("");
         setPhone("");
-        router.push("/courses");
+        router.push("/ar/courses");
       } else {
         // 🛡️ استخدام رسالة خطأ من الخادم إن وُجدت
         alert(data.message || "حدث خطأ أثناء إرسال الحجز");
@@ -886,6 +812,11 @@ export default function EventPage({
     }
   };
 
+  // 1. تعريف متغير الحالة في أعلى المكون
+  const [error, setError] = useState<string | null>(null);
+  // ...
+
+  // 2. تعديل دالة useEffect لتخزين البيانات
   return (
     <>
       {/* Structured Data Scripts */}
@@ -896,10 +827,6 @@ export default function EventPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <main
@@ -915,6 +842,7 @@ export default function EventPage({
           <div className="absolute rounded-full shadow-md top-2/3 right-1/4 w-18 h-18 bg-gradient-to-br from-royal-200/8 to-royal-300/4 dark:from-royal-600/8 dark:to-royal-700/4 blur-md animate-float-medium"></div>
           <div className="absolute rounded-full shadow-sm top-1/4 right-1/2 w-14 h-14 bg-gradient-to-br from-crimson-200/6 to-crimson-300/3 dark:from-crimson-600/6 dark:to-crimson-700/3 blur-lg animate-float-fast"></div>
         </div>
+
         {/* Hero Section */}
         <section className="relative py-20 overflow-hidden text-white bg-gradient-to-br from-royal-900 via-navy-800 to-royal-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
           <div className="container px-4 mx-auto">
@@ -968,8 +896,8 @@ export default function EventPage({
             </div>
           </div>
         </section>
+
         {/* قسم الصور المتحركة */}
-        {/* 🖼️ استخدام مصفوفة الصور الفعلية من بيانات الكورس */}
         <div className="py-8">
                
           <Marquee // 🚀 سرعة العرض: استخدمنا هنا الخاصية التي طلبتها (speed={40})
@@ -1002,6 +930,7 @@ export default function EventPage({
           </Marquee>
              
         </div>
+
         <div className="container relative z-10 px-4 py-12 mx-auto">
           <div className="grid gap-8 lg:grid-cols-4">
             {/* Main Content */}
@@ -1211,41 +1140,71 @@ export default function EventPage({
               </Card>
 
               {/* Instructor */}
-              {/* <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle
-                    ref={instructorTitleRef}
-                    className="text-gray-900 dark:text-white"
-                  >
-                    {t.instructor}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    ref={instructorInfoRef}
-                    className="flex items-start gap-4"
-                  >
-                    <Image
-                      src={course.instructor.image || "/placeholder.svg"}
-                      alt={course.instructor.name}
-                      width={80}
-                      height={80}
-                      className="object-cover w-20 h-20 rounded-full"
-                    />
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {course.instructor.name}
-                      </h3>
-                      <p className="font-medium text-royal-600 dark:text-royal-400">
-                        {course.instructor.title}
-                      </p>
-                      <p className="mt-1 text-gray-600 dark:text-gray-400">
-                        {course.instructor.experience}
-                      </p>
+              {instructor ? (
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle
+                      ref={instructorTitleRef}
+                      className="text-gray-900 dark:text-white"
+                    >
+                      {t.instructor}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <a
+                      href={instructor?.linkedin_url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <div
+                        ref={instructorInfoRef}
+                        className="flex items-start gap-4"
+                      >
+                        <img
+                          src={instructor?.image_url ?? "/placeholder.svg"}
+                          alt={
+                            (isArabic
+                              ? instructor?.name_ar
+                              : instructor?.name_en) || ""
+                          }
+                          className="object-cover w-20 h-20 rounded-full"
+                        />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {isArabic
+                              ? instructor?.name_ar ?? instructor?.name_en
+                              : instructor?.name_en ?? instructor?.name_ar}
+                          </h3>
+
+                          <p className="mt-1 text-gray-600 dark:text-gray-400">
+                            {isArabic
+                              ? instructor?.experience_ar ??
+                                instructor?.experience_en
+                              : instructor?.experience_en ??
+                                instructor?.experience_ar}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900 dark:text-white">
+                      {t.instructor}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-center text-gray-500">
+                      {/* simple placeholder while instructor is loading */}
+                      {isArabic
+                        ? "جاري تحميل المدرب..."
+                        : "Loading instructor..."}
                     </div>
-                  </div>
-                </CardContent>
-              </Card> */}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* FAQ */}
               <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -1295,26 +1254,31 @@ export default function EventPage({
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pb-10">
+                  <CardContent>
                     {/* تحويل div إلى form مع onSubmit للحفاظ على الفانكشينالتي */}
-                    <form onSubmit={handleSubmit} className="space-y-1">
-                      {/* 1. حقل التاريخ (Date) - التحكم عبر الحالة setDate */}
+                    <form
+                      ref={bookingFormRef}
+                      className="space-y-4"
+                      onSubmit={handleSubmit}
+                    >
+                      {/* التاريخ */}
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          {t.selectDate}
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t.selectDate} <span className="text-red-500">*</span>
                         </label>
-                        <Select
-                          onValueChange={(val) => setDate(val)}
-                          value={date} // استخدام القيمة المراقبة
-                        >
-                          <SelectTrigger>
+                        <Select onValueChange={setDate} value={date}>
+                          <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                             <SelectValue
                               placeholder={t.selectDatePlaceholder}
                             />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                             {availableDates.map((d) => (
-                              <SelectItem key={d.value} value={d.value}>
+                              <SelectItem
+                                key={d.value}
+                                value={d.value}
+                                className="dark:text-white dark:hover:bg-gray-700"
+                              >
                                 {d.label}
                               </SelectItem>
                             ))}
@@ -1322,23 +1286,24 @@ export default function EventPage({
                         </Select>
                       </div>
 
-                      {/* 2. حقل المدينة (City) - التحكم عبر الحالة setCity */}
+                      {/* المدينة */}
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          {t.selectCity}
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t.selectCity} <span className="text-red-500">*</span>
                         </label>
-                        <Select
-                          onValueChange={(val) => setCity(val)}
-                          value={city}
-                        >
-                          <SelectTrigger>
+                        <Select onValueChange={setCity} value={city}>
+                          <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                             <SelectValue
                               placeholder={t.selectCityPlaceholder}
                             />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                             {currentCities.map((c) => (
-                              <SelectItem key={c} value={c}>
+                              <SelectItem
+                                key={c}
+                                value={c}
+                                className="dark:text-white dark:hover:bg-gray-700"
+                              >
                                 {c}
                               </SelectItem>
                             ))}
@@ -1346,65 +1311,61 @@ export default function EventPage({
                         </Select>
                       </div>
 
-                      {/* 3. حقل الاسم (Name) - حقل مُتحكم به عبر الحالة */}
+                      {/* الاسم */}
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          {t.name}
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t.name} {t.required}
                         </label>
                         <Input
                           placeholder={t.namePlaceholder}
+                          required
                           value={name}
-                          onChange={(e) =>
-                            setName((e.target as HTMLInputElement).value)
-                          }
+                          onChange={(e) => setName(e.target.value)}
+                          className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         />
                       </div>
 
-                      {/* 4. حقل الإيميل (Email) - حقل مُتحكم به عبر الحالة */}
+                      {/* الايميل */}
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          {t.email}
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t.email} {t.required}
                         </label>
                         <Input
                           type="email"
                           placeholder={t.emailPlaceholder}
+                          required
                           value={email}
-                          onChange={(e) =>
-                            setEmail((e.target as HTMLInputElement).value)
-                          }
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         />
                       </div>
 
-                      {/* 5. حقل الهاتف (Phone) - حقل مُتحكم به عبر الحالة */}
+                      {/* الهاتف */}
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          {t.phone}
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t.phone} {t.required}
                         </label>
                         <Input
                           type="tel"
                           placeholder={t.phonePlaceholder}
+                          required
                           value={phone}
-                          onChange={(e) =>
-                            setPhone((e.target as HTMLInputElement).value)
-                          }
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         />
                       </div>
 
                       {/* زر الإرسال */}
                       <Button
                         type="submit"
-                        className="w-full py-3 text-lg font-semibold text-white transition duration-300 bg-crimson-500 hover:bg-crimson-600 dark:bg-crimson-600 dark:hover:bg-crimson-700 h-fit "
-                        disabled={loading}
+                        className="w-full bg-crimson-500 hover:bg-crimson-600 dark:bg-crimson-600 dark:hover:bg-crimson-700 text-white py-3 text-lg font-semibold transition duration-300 h-fit !opacity-100 !visible"
                       >
-                        {loading
-                          ? isArabic
-                            ? "...جاري الحجز"
-                            : "Booking..."
-                          : t.bookNow}
+                        {t.bookNow}
                       </Button>
                     </form>
                   </CardContent>
                 </Card>
+
                 {/* Course Information */}
                 <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                   <CardHeader>
@@ -1509,8 +1470,8 @@ export default function EventPage({
                     <div ref={contactItemsRef} className="space-y-3">
                       <div className="flex items-center justify-center gap-3">
                         <Phone className="w-5 h-5" />
-                        <a href="tel:+447999958569" className="hover:underline">
-                          +44 7999 958569
+                        <a href="tel:+44201234567" className="hover:underline">
+                          +44 20 1234 567
                         </a>
                       </div>
                       <div className="flex items-center justify-center gap-3">
@@ -1578,4 +1539,7 @@ export default function EventPage({
       </main>
     </>
   );
+}
+function setError(arg0: string) {
+  throw new Error("Function not implemented.");
 }

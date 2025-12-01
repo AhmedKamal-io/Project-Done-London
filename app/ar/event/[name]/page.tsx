@@ -38,77 +38,90 @@ async function fetchAllCourses() {
 // ================================
 export async function generateMetadata({ params }: any) {
   const slugFromURL = params.name;
-  
+
   try {
     const result = await fetchAllCourses();
     const courses = result?.data || [];
     const course = findCourseBySlug(courses, slugFromURL);
-    
+
     if (!course) {
       return {
-        title: 'Course Not Found',
-        description: 'The requested course could not be found.'
+        title: "Course Not Found",
+        description: "The requested course could not be found.",
       };
     }
-    
+
     // قراءة اللغة
     const cookieStore = cookies();
-    const lang = (cookieStore.get('language')?.value || 'en') as 'ar' | 'en';
-    
+    const lang = (cookieStore.get("language")?.value || "en") as "ar" | "en";
+
     // استخراج البيانات حسب اللغة من translations
-    const title = course.translations?.[lang]?.name || course.translations?.en?.name || 'Course';
-    const description = course.translations?.[lang]?.description || course.translations?.en?.description || '';
-    const siteName = lang === 'ar' 
-      ? 'أكاديمية لندن للإعلام والعلاقات العامة'
-      : 'London Academy for Media & PR';
-    
-    const baseUrl = 'https://www.lampr.ac';
+    const title =
+      course.translations?.[lang]?.name ||
+      course.translations?.en?.name ||
+      "Course";
+    const description =
+      course.translations?.[lang]?.description ||
+      course.translations?.en?.description ||
+      "";
+    const siteName =
+      lang === "ar"
+        ? "أكاديمية لندن للإعلام والعلاقات العامة"
+        : "London Academy for Media & PR";
+
+    const baseUrl = "https://www.lampr.ac";
     const slug = course.slug?.[lang] || slugFromURL;
-    const prefix = lang === 'ar' ? '/ar' : '';
+    const prefix = lang === "ar" ? "/ar" : "";
     const url = `${baseUrl}${prefix}/event/${slug}`;
-    
+
     return {
       title: `${title} | ${siteName}`,
       description: description.substring(0, 160),
-      keywords: course.keywords?.[lang] || '',
+      keywords: course.keywords?.[lang] || "",
       openGraph: {
-        type: 'website',
-        locale: lang === 'ar' ? 'ar_SA' : 'en_GB',
+        type: "website",
+        locale: lang === "ar" ? "ar_SA" : "en_GB",
         url: url,
         siteName: siteName,
         title: title,
         description: description.substring(0, 160),
-        images: course.image ? [{
-          url: course.image,
-          width: 1200,
-          height: 630,
-          alt: title
-        }] : [{
-          url: `${baseUrl}/logo.png`,
-          width: 1200,
-          height: 630,
-          alt: siteName
-        }]
+        images: course.image
+          ? [
+              {
+                url: course.image,
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ]
+          : [
+              {
+                url: `${baseUrl}/logo.png`,
+                width: 1200,
+                height: 630,
+                alt: siteName,
+              },
+            ],
       },
       twitter: {
-        card: 'summary_large_image',
+        card: "summary_large_image",
         title: title,
         description: description.substring(0, 160),
-        images: course.image ? [course.image] : [`${baseUrl}/logo.png`]
+        images: course.image ? [course.image] : [`${baseUrl}/logo.png`],
       },
       alternates: {
         canonical: url,
         languages: {
-          'ar-SA': `${baseUrl}/ar/event/${course.slug?.ar || slug}`,
-          'en-GB': `${baseUrl}/event/${course.slug?.en || slug}`
-        }
-      }
+          "ar-SA": `${baseUrl}/ar/event/${course.slug?.ar || slug}`,
+          "en-GB": `${baseUrl}/event/${course.slug?.en || slug}`,
+        },
+      },
     };
   } catch (error) {
-    console.error('Error generating metadata:', error);
+    console.error("Error generating metadata:", error);
     return {
-      title: 'Course',
-      description: 'Professional training course'
+      title: "Course",
+      description: "Professional training course",
     };
   }
 }
@@ -119,7 +132,7 @@ export async function generateMetadata({ params }: any) {
 function findCourseBySlug(courses: any[], slug: string) {
   // تنظيف slug: إزالة URL encoding واستبدال - بمسافة
   const normalizedSlug = decodeURIComponent(slug)
-    .replace(/-/g, ' ')  // استبدال - بمسافة
+    // .replace(/-/g, " ") // استبدال - بمسافة
     .toLowerCase()
     .trim();
 
@@ -134,13 +147,14 @@ function findCourseBySlug(courses: any[], slug: string) {
   return courses.find((c) => {
     const arSlug = c.slug?.ar?.toLowerCase().trim();
     const enSlug = c.slug?.en?.toLowerCase().trim();
-    
+
     return arSlug === normalizedSlug || enSlug === normalizedSlug;
   });
 }
 
 // ================================
 // 3) Page Component
+// ================================
 // ================================
 export default async function EventPageWrapper({ params }: any) {
   const slugFromURL = params.name;
@@ -156,105 +170,187 @@ export default async function EventPageWrapper({ params }: any) {
     console.error("❌ Course not found for slug:", slugFromURL);
     notFound();
   }
-
   // 3) قراءة اللغة الحالية
   const cookieStore = cookies();
-  const currentLang = (cookieStore.get('language')?.value || 'ar') as 'ar' | 'en';
+  const currentLang = (cookieStore.get("language")?.value || "ar") as
+    | "ar"
+    | "en";
 
   // 4) إنشاء Course Schema
   const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
-    "name": matchedCourse.translations?.[currentLang]?.name || matchedCourse.translations?.ar?.name,
-    "description": matchedCourse.translations?.[currentLang]?.description || matchedCourse.translations?.ar?.description,
-    "provider": {
+    name:
+      matchedCourse.translations?.[currentLang]?.name ||
+      matchedCourse.translations?.ar?.name,
+    description:
+      matchedCourse.translations?.[currentLang]?.description ||
+      matchedCourse.translations?.ar?.description,
+    provider: {
       "@type": "Organization",
-      "name": currentLang === 'ar' ? "أكاديمية لندن للإعلام والعلاقات العامة" : "London Academy for Media & PR",
-      "url": "https://www.lampr.ac"
+      name:
+        currentLang === "ar"
+          ? "أكاديمية لندن للإعلام والعلاقات العامة"
+          : "London Academy for Media & PR",
+      url: "https://www.lampr.ac",
     },
-    "hasCourseInstance": {
+    hasCourseInstance: {
       "@type": "CourseInstance",
-      "courseMode": "onsite",
-      "location": {
+      courseMode: "onsite",
+      location: {
         "@type": "Place",
-        "name": matchedCourse.translations?.[currentLang]?.city || matchedCourse.translations?.ar?.city,
-        "address": {
+        name:
+          matchedCourse.translations?.[currentLang]?.city ||
+          matchedCourse.translations?.ar?.city,
+        address: {
           "@type": "PostalAddress",
-          "addressLocality": matchedCourse.translations?.[currentLang]?.city || matchedCourse.translations?.ar?.city
-        }
+          addressLocality:
+            matchedCourse.translations?.[currentLang]?.city ||
+            matchedCourse.translations?.ar?.city,
+        },
       },
-      "startDate": matchedCourse.courseDate,
-      "instructor": {
+      startDate: matchedCourse.courseDate,
+      instructor: {
         "@type": "Organization",
-        "name": currentLang === 'ar' ? "أكاديمية لندن" : "London Academy"
-      }
+        name: currentLang === "ar" ? "أكاديمية لندن" : "London Academy",
+      },
     },
-    "offers": {
+    offers: {
       "@type": "Offer",
-      "category": matchedCourse.translations?.[currentLang]?.section || matchedCourse.translations?.ar?.section,
-      "availability": "https://schema.org/InStock"
-    }
+      category:
+        matchedCourse.translations?.[currentLang]?.section ||
+        matchedCourse.translations?.ar?.section,
+      availability: "https://schema.org/InStock",
+    },
   };
 
   // 5) إنشاء Breadcrumb Schema
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": [
+    itemListElement: [
       {
         "@type": "ListItem",
-        "position": 1,
-        "name": currentLang === 'ar' ? "الرئيسية" : "Home",
-        "item": "https://www.lampr.ac"
+        position: 1,
+        name: currentLang === "ar" ? "الرئيسية" : "Home",
+        item: "https://www.lampr.ac",
       },
       {
         "@type": "ListItem",
-        "position": 2,
-        "name": currentLang === 'ar' ? "الدورات" : "Courses",
-        "item": "https://www.lampr.ac/ar/courses"
+        position: 2,
+        name: currentLang === "ar" ? "الدورات" : "Courses",
+        item: "https://www.lampr.ac/ar/courses",
       },
       {
         "@type": "ListItem",
-        "position": 3,
-        "name": matchedCourse.translations?.[currentLang]?.name || matchedCourse.translations?.ar?.name,
-        "item": `https://www.lampr.ac/ar/event/${slugFromURL}`
-      }
-    ]
+        position: 3,
+        name:
+          matchedCourse.translations?.[currentLang]?.name ||
+          matchedCourse.translations?.ar?.name,
+        item: `https://www.lampr.ac/ar/event/${slugFromURL}`,
+      },
+    ],
   };
 
   // 6) إنشاء FAQ Schema
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": [
+    mainEntity: [
       {
         "@type": "Question",
-        "name": currentLang === 'ar' ? "ما هي مدة الدورة?" : "What is the course duration?",
-        "acceptedAnswer": {
+        name:
+          currentLang === "ar"
+            ? "ما هي مدة الدورة?"
+            : "What is the course duration?",
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": currentLang === 'ar' ? "الدورة تستغرق 5 أيام تدريبية مكثفة." : "The course duration is 5 intensive training days."
-        }
+          text:
+            currentLang === "ar"
+              ? "الدورة تستغرق 5 أيام تدريبية مكثفة."
+              : "The course duration is 5 intensive training days.",
+        },
       },
       {
         "@type": "Question",
-        "name": currentLang === 'ar' ? "أين تُعقد الدورة?" : "Where is the course held?",
-        "acceptedAnswer": {
+        name:
+          currentLang === "ar"
+            ? "أين تُعقد الدورة?"
+            : "Where is the course held?",
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": `${currentLang === 'ar' ? 'تُعقد الدورة في' : 'The course is held in'} ${matchedCourse.translations?.[currentLang]?.city || matchedCourse.translations?.ar?.city}.`
-        }
+          text: `${
+            currentLang === "ar" ? "تُعقد الدورة في" : "The course is held in"
+          } ${
+            matchedCourse.translations?.[currentLang]?.city ||
+            matchedCourse.translations?.ar?.city
+          }.`,
+        },
       },
       {
         "@type": "Question",
-        "name": currentLang === 'ar' ? "هل تحصل على شهادة?" : "Do I get a certificate?",
-        "acceptedAnswer": {
+        name:
+          currentLang === "ar"
+            ? "هل تحصل على شهادة?"
+            : "Do I get a certificate?",
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": currentLang === 'ar' ? "نعم، تحصل على شهادة معتمدة من أكاديمية لندن بعد إتمام الدورة." : "Yes, you will receive an accredited certificate from London Academy upon course completion."
-        }
-      }
-    ]
+          text:
+            currentLang === "ar"
+              ? "نعم، تحصل على شهادة معتمدة من أكاديمية لندن بعد إتمام الدورة."
+              : "Yes, you will receive an accredited certificate from London Academy upon course completion.",
+        },
+      },
+    ],
   };
 
-  // 7) Pass course to child component
+  async function fetchInstructorById(courseData: any) {
+    if (!API_BASE_URL) {
+      throw new Error("Server configuration error: Missing base URL");
+    }
+
+    try {
+      // ⬅️ التعديل رقم 2: يجب التأكد أن حقل المدرب موجود وله _id
+      const instructorId = courseData.trainer?._id;
+
+      if (!instructorId) {
+        return { success: false, error: "Trainer ID is missing" };
+      }
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/instructors/${instructorId}`,
+        {
+          next: { revalidate: 3600 },
+        }
+      );
+
+      if (!res.ok) {
+        const body = await res.text();
+        console.error("Instructor API ERROR:", body);
+        return { success: false, error: "Failed to fetch instructor" };
+      }
+
+      const result = await res.json();
+      return { success: true, data: result.data || result };
+    } catch (err) {
+      console.error("❌ Instructor Fetch Error:", err);
+      return { success: false, error: "Server fetch error" };
+    }
+  }
+  // ----------------------------------------------------
+
+  // 3) قراءة اللغة الحالية
+  // يجب استخدام await لأنها دالة غير متزامنة (async)
+  // ----------------------------------------------------
+  const instructorResponse = await fetchInstructorById(matchedCourse);
+  const instructorData = instructorResponse.success
+    ? instructorResponse.data
+    : undefined;
+  // ----------------------------------------------------
+
+  // 4) إنشاء Course Schema
+
+  // 7) Pass course AND instructor to child component
   return (
     <>
       <JsonLd data={courseSchema} />
@@ -264,6 +360,8 @@ export default async function EventPageWrapper({ params }: any) {
       <EventPage
         params={{ slug: slugFromURL }}
         course={{ success: true, data: matchedCourse }}
+        // ⬅️ هنا instructorData تم تعريفه الآن
+        instructor={instructorData}
       />
     </>
   );
