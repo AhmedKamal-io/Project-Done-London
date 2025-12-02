@@ -168,7 +168,7 @@ export default function CoursesTable({ filters }: CoursesTableProps) {
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
       "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
     ];
-    return colors[section.length % colors.length];
+    return colors[(section?.length ?? 0) % colors.length];
   };
 
   // --- شاشات التحميل والخطأ ---

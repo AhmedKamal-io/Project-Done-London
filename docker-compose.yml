@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  nextjs-app:
+    # 1. طلب بناء الصورة من Dockerfile الموجود في المسار الحالي
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: nextjs-working-app
+
+    # 2. ربط المنفذ الخارجي 3000 بالداخلي 3000
+    ports:
+      - "3000:3000"
+
+    # 3. Volumes Mount: هنا يتم ربط ملف .env الخارجي
+    volumes:
+      # نربط الملف .env على جهازك/الـ VPS بمسار /app/.env داخل الحاوية.
+      # هذا يجعله قابلاً للقراءة والتعديل الخارجي.
+      - ./.env:/app/.env
+
+    # 4. إعادة تشغيل تلقائية (مفيدة في الإنتاج)
+    restart: always
